@@ -25,8 +25,8 @@ Our solution of CVRP will be represented by a collection(array) of tours on the 
 
 Objectif function : 
 
-			$S_{x} = [[(R_{i}, T_{i}), \sum_{i=1} q_{i}];    [(R_{n}, T_{n}), \sum_{n=1} q_{n}]]$ 
-					where Q = max(total q)
+			$$S_{x} = [[(R_{i}, T_{i}), \sum_{i=1} q_{i}];    [(R_{n}, T_{n}), \sum_{n=1} q_{n}]] 
+					where Q = max(total q)$$
 Graphical theoritical formulation, 
 	For a graph  G = (C, L),
 		we have $c_{0}$ as the depot and $c_{n}/{n≠0}$ each note has a fixed demanded quantity  $q_{n}$. With $G_{0}= (c_{0},(c_{i},c_{j}) i≠j≠0)$ and $q_{0} = 0$  
