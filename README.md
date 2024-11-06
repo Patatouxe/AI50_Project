@@ -11,7 +11,9 @@ We can find below a formal description for the CVRP:
 
 - **Feasibility:** A solution is feasible if the total quantity assigned to each route does not exceed the capacity of the vehicle which services the route.
 
-- **Formulation:** Let Q denote the capacity of a vehicle. Mathematically, a solution for the CVRP is the same that VRP's one, but with the additional restriction that the total demand of all customers supplied on a route $R_{i}$ does not exceed the vehicle capacity $$Q: \sum_{i=1}^{m} q_{i} \leq Q$$
+- **Formulation:** Let Q denote the capacity of a vehicle. Mathematically, a solution for the CVRP is the same that VRP's one, but with the additional restriction that the total demand of all customers supplied on a route $R_{i}$ does not exceed the vehicle capacity
+
+  	 $$Q: \sum_{i=1}^{m} q_{i} \leq Q$$
 
 
 #### Variables: 
