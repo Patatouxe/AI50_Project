@@ -40,7 +40,7 @@ Graphical theoritical formulation,
  #### ***Ant Colony System*** 
  Using the version by Gambardella, Taillard and Agazzi 1999, we implement a MACS-CVRP (Multiple Ant colony System for Capacitated VRP). 
  The **objective function**s fo two ant colonies:
- -  one for minimizing the vehicle/vehicle tours by maximising the load of each vehicle ensuring it stays within capacity limits 
+ - One colony aims to maximize the demands of customers answered by maximising the load of each vehicle ensuring it stays within capacity limits 
  - the other to minimize the total travel distances, given the fixed number of vehicles.
  These colonies interact with each other through pheromone updates as a shared memory system.
 **Capacity Constraints** 
