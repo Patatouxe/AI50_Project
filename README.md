@@ -168,3 +168,87 @@ For Tabu Research:
 - Rochat and Taillard, 1995
 For Genetic Algorithm:
 - Potvin and Bengio, 1996(PB)
+
+
+# AI50 Project - Capacitated Vehicle Routing Problem (CVRP)
+
+An implementation of Multiple Ant Colony System for solving the Capacitated Vehicle Routing Problem (CVRP).
+
+## Requirements
+
+- Python 3.10+
+- Dependencies:
+  - numpy
+  - matplotlib
+  - tqdm
+  - requests_toolbelt
+
+## Installation
+
+```bash
+# Clone the repository
+git clone [repository-url]
+
+# Install dependencies
+pip install numpy matplotlib tqdm requests_toolbelt
+```
+
+## Project Structure
+
+```
+.
+├── data/
+│   └── tai/           # CVRP benchmark instances
+├── src/
+│   ├── ACO/
+│   │   └── aco_colony.py  # MACS-CVRP implementation
+│   └── CVRP.py       # CVRP problem definition
+└── main.py           # Main execution script
+```
+
+## Usage
+
+Run the main script to execute the MACS-CVRP algorithm:
+
+```bash
+python main.py
+```
+
+The script will:
+1. Load a CVRP instance from the data directory
+2. Initialize the MACS-CVRP solver
+3. Run the optimization for 100 iterations
+4. Display the best solution found, including:
+   - Route assignments
+   - Total distance
+   - Number of vehicles used
+
+## Algorithm Details
+
+The implementation uses Multiple Ant Colony System (MACS) with two colonies:
+- ACS-VEI: Minimizes the number of vehicles
+- ACS-DIST: Minimizes the total travel distance
+
+Key parameters:
+- `rho`: Global pheromone evaporation rate (default: 0.1)
+- `local_rho`: Local pheromone update rate (default: 0.1)
+
+## Benchmarks
+
+The project uses Taillard's CVRP benchmark instances. Solutions can be compared against:
+- Rochat and Taillard, 1995
+- Potvin and Bengio, 1996 (PB)
+
+## Development
+
+### Testing
+Add unit tests in a `tests/` directory (to be implemented).
+
+### Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Commit changes
+4. Submit a pull request
+
+## License
+[Add your license information here]

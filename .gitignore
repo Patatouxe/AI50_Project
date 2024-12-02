@@ -141,4 +141,4 @@ cython_debug/
 .DS_Store
 
 # Ignore the description.md file
-src/ACO/description.md
+src/ACO_MACS/description.md
