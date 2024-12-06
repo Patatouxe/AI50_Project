@@ -6,18 +6,18 @@ import logging
 from pyexpat.errors import messages
 
 from src.CVRP import CVRP
-from src.ACO.aco_colony import MACS_CVRP
+from src.ACO_MACS.aco_colony import MACS_CVRP
 
 def main():
     #Set up the logger
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
 
-    ## MACS- ACO algorithm
+    ## MACS- ACO_MACS algorithm
     try:
 
         #Initialize the CVRP instance with the path to the data file
-        cvrp_macs_instance = CVRP("data/tai/tai150a.vrp")
+        cvrp_macs_instance = CVRP("data/tai/tai75b.vrp")
         #print(f' CVRP instance: {cvrp_macs_instance.name} with {cvrp_macs_instance.dimension} customers')
         #print(f' Capacity per truck: {cvrp_macs_instance.capacity}')
         logger.info(f'Loaded CVRP instance: {cvrp_macs_instance.name}')
@@ -30,7 +30,7 @@ def main():
 
         #Print the best solution found by the MACS algorithm
         print(f' Running MACS algorithm...')
-        macs_solution, macs_distance, macs_vehicles = macs.run(100)
+        macs_solution, macs_distance, macs_vehicles = macs.run(200)
 
         #validate macs_solution
         is_feasible, message = cvrp_macs_instance.validate_solution(macs_solution)

@@ -1,7 +1,7 @@
 import re
 from typing import Tuple, List, Optional
 
-from src.ACO.aco_colony import Route
+from src.ACO_MACS.aco_colony import Route
 
 
 class CVRP:
@@ -113,7 +113,7 @@ class CVRP:
         return True, "Solution is Feasible"
 
 if __name__ == "__main__":
-    n32 = CVRP("data/tai/tai150d.vrp")
+    n32 = CVRP("data/tai/tai75a.vrp")
     print(n32)
     #print(n32.depot[0] )
 
