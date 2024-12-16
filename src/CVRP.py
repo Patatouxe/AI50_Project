@@ -1,8 +1,14 @@
+from dataclasses import dataclass
 import re
 from typing import Tuple, List, Optional
 
-from src.ACO_MACS.aco_colony import Route
+#from ACO_MACS.aco_colony import Route
 
+@dataclass
+class Route:
+    customers: List[int]
+    capacity: float
+    distance: float
 
 class CVRP:
     def __init__(self, path):
