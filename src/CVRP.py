@@ -1,4 +1,8 @@
 import re
+from typing import Tuple, List, Optional
+
+from src.ACO_MACS.aco_colony import Route
+
 
 class CVRP:
     def __init__(self, path):
@@ -75,9 +79,42 @@ class CVRP:
 
         return "\n".join(details + [node_coords_section, demands_section])
 
+    def format_solution(self, routes: List[Route], total_distance: float) -> str:
+        output_lines = []
+
+        for i , route in enumerate(routes, 1):
+            route_capacity= sum(self.demand[customer] for customer in route.customers)
+            route_str = f"Route #{i}: {'  '.join(map(str, route.customers))}  (Total demand answered: {route_capacity})"
+            output_lines.append(route_str)
+
+        output_lines.append(f"Total distance: {total_distance:.2f}")
+        return "\n ".join(output_lines)
+
+
+
+    def validate_solution(self, routes: List[Route]) -> Tuple[bool, str]:
+        visited_solution = set()
+
+        # Check if the solution is feasible
+        for route in routes:
+            route_capacity = sum(self.demand[customer] for customer in route.customers)
+            if route_capacity > self.capacity:
+                return False, "Route exceeds capacity :  {route_capacity} > {self.capacity}"
+            for customer in route.customers:
+                if customer in visited_solution:
+                    return False, f"Customer {customer} visited more than once"
+                visited_solution.add(customer)
+
+        all_customers =set(range(1, self.dimension + 1))
+        if visited_solution != all_customers:
+            missing = all_customers - visited_solution
+            return False, f"Unvisited customers: {missing}"
+
+        return True, "Solution is Feasible"
 
 if __name__ == "__main__":
-    n32 = CVRP("Data/A-n32-k5.vrp")
-    #print(n32)
-    print (n32.node_coord[6])
-    print(n32.demand[6])
+    n32 = CVRP("data/tai/tai75a.vrp")
+    print(n32)
+    #print(n32.depot[0] )
+
+    
