@@ -36,7 +36,7 @@ class Colony:
         averageCost = sum(costs)/self.nbrAnts
         for i in range(len(self.matrixP)):
             for j in range(len(self.matrixP[i])):
-                self.matrixP[i][j] *= (1-self.evapRate+self.theta/averageCost)
+                self.matrixP[i][j] *= (1-self.evapRate+self.theta/averageCost)# simulates the evaporation process of the pheromone trail in nature which depends on the length of the path travelled by an ant
                 #self.matrixP[i][j] *= (1-self.evapRate)
 
         for solution, cost in zip(solutions,costs):
@@ -110,7 +110,7 @@ class Colony:
                     for next_node in unvisited:
                         if demands[next_node] <= remainingCap:
                             tau = self.matrixP[current_node-1][next_node-1] ** self.alpha #The -1 is because the nodes range from 1 to dimension so we put it back to a 0 to dimension-1 to go through the matrix
-                            eta = (1/self.matrixD[current_node-1][next_node-1]) ** self.beta
+                            eta = (1/self.matrixD[current_node-1][next_node-1]) ** self.beta if self.matrixD[current_node-1][next_node-1] != 0 else 1
                             mu = (self.matrixD[current_node-1][0] + self.matrixD[0][next_node-1] - self.matrixD[current_node-1][next_node-1])**self.gamma #Savings of combining 2 cities i and j on one tour instead of visiting them on 2 different tours
                             mu = mu if mu!=0 else 1 #This line is for the routes to or from the depot
                             probabilities.append((next_node,tau*eta*mu))
