@@ -61,22 +61,36 @@ def savings_algorithm(cvrp):
         savings = calculate_savings(cvrp, routes)
         for save, ri, rj in savings:  # Itérer sur une copie en utilisant slicing [:]
 
+            # Vérifier si le nombre de routes est inférieur ou égal au nombre de camionss
+            if len(routes) <= cvrp.num_trucks:
+                break
+
             # Vérifier si les routes i et j existent toujours
             if ri not in routes or rj not in routes:
                 continue  # Passer à l'économie suivante
 
-            i = routes.index(ri)
-            j = routes.index(rj)
             # Vérifier que la fusion de i et j ne dépasse pas la capacité du camion
             if calc_demand_route(cvrp, ri) + calc_demand_route(cvrp, rj) > cvrp.capacity:
                 continue  # Passer à la prochaine économie
 
+
+            i = routes.index(ri)
+            j = routes.index(rj)
             # Fusionner les routes i et j si elles existent
             if ri in routes and rj in routes and save > 0:
                 # Localiser les positions de i et j dans routes
                 routes = merge_routes(routes, i, j)
     return routes
-                
 
-savings = CVRP("src\data\A\A-n32-k5.vrp")
+
+savings = CVRP("src\data\A\A-n46-k7.vrp")
 solution = savings_algorithm(savings)
+
+for route in solution:
+    print(f"route : {route}")
+    print(f"Poids total: {calc_demand_route(savings, route)}")
+
+total_distance = 0
+for route in solution:
+    total_distance += calc_dist_route(savings, route)
+print(f"Total distance: {total_distance}")
