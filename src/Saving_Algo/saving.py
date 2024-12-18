@@ -31,7 +31,7 @@ def merge_routes(routes, i, j):
     routes.pop(i)
     routes.pop(j)
     routes.append(new_route)
-    print(f"New route: {new_route}")
+    # print(f"New route: {new_route}")
     return routes
 
 def calc_dist_route(cvrp, route):
@@ -57,29 +57,26 @@ def initialize_routes(cvrp):
 def savings_algorithm(cvrp):
     routes = initialize_routes(cvrp)
 
-
-    while len(routes) > cvrp.num_trucks :
+    while len(routes) > cvrp.num_trucks:
         savings = calculate_savings(cvrp, routes)
-        for save, ri, rj in savings:
-            # Vérifier que la fusion de i et j ne dépasse pas la capacité du camion
+        for save, ri, rj in savings:  # Itérer sur une copie en utilisant slicing [:]
+
+            # Vérifier si les routes i et j existent toujours
+            if ri not in routes or rj not in routes:
+                continue  # Passer à l'économie suivante
+
             i = routes.index(ri)
             j = routes.index(rj)
+            # Vérifier que la fusion de i et j ne dépasse pas la capacité du camion
             if calc_demand_route(cvrp, ri) + calc_demand_route(cvrp, rj) > cvrp.capacity:
-                continue # Passer à la prochaine économie
+                continue  # Passer à la prochaine économie
 
-            # Pour chaque save, fusionner les routes i et j si elles existent
-            # print(f"Save: {save}, i: {i}, j: {j}")
-            # print(f"Routes: {routes}")
+            # Fusionner les routes i et j si elles existent
             if ri in routes and rj in routes and save > 0:
-                # locate the position of i and j in routes
+                # Localiser les positions de i et j dans routes
                 routes = merge_routes(routes, i, j)
-            # Retire tous les savings où i est à la première position et j est à la dernière position
-            # pour éviter de fusionner les mêmes routes
-            for save, rib, rjb in savings:
-                if rib == ri and rjb == rj:
-                    print(f"Removing {save, rib, rjb}")
-                    savings.remove((save, rib, rjb))
-        print(routes)
+    return routes
+                
 
 savings = CVRP("src\data\A\A-n32-k5.vrp")
-savings_algorithm(savings)
+solution = savings_algorithm(savings)
