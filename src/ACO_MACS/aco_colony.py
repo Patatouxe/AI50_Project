@@ -10,16 +10,11 @@ from dataclasses import dataclass
 import networkx as nx
 from concurrent.futures import ThreadPoolExecutor
 import logging
-
+from ..CVRP import CVRP
+from ..CVRP import Route
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-
-@dataclass
-class Route:
-    customers: List[int]
-    capacity: float
-    distance: float
 
 
 class MACS_CVRP:

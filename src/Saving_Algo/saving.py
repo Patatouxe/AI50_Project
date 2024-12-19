@@ -3,6 +3,16 @@ import pandas as pd
 from math import sqrt
 from ..CVRP import CVRP
 
+
+# Pour utiliser cet algo, appelez la fonction savings_algorithm(cvrp) avec comme input un cvrp la classe CVRP
+# L'output est un tuple (routes, distance_totale)
+# distance_totale est la somme des distances de toutes les routes
+# route est une matrice où chaque ligne est la liste des id que prend un véhicule, dans l'ordre
+
+# routes, disttot = savings_algorithm(CVRP("src\data\A\A-n33-k5.vrp"))
+
+# Pour le lancer, utiliser la commande python -m src.Saving_Algo.saving dans le terminal
+
 # Calcul des économies pour chaque paire de clients (i, j)
 def calculate_savings(cvrp, routes):
     savings = []
@@ -80,17 +90,10 @@ def savings_algorithm(cvrp):
             if ri in routes and rj in routes and save > 0:
                 # Localiser les positions de i et j dans routes
                 routes = merge_routes(routes, i, j)
-    return routes
+        
+    tot_dist = 0
+    for route in routes:
+        tot_dist += calc_dist_route(cvrp, route)
+    return routes, tot_dist
 
 
-savings = CVRP("src\data\A\A-n46-k7.vrp")
-solution = savings_algorithm(savings)
-
-for route in solution:
-    print(f"route : {route}")
-    print(f"Poids total: {calc_demand_route(savings, route)}")
-
-total_distance = 0
-for route in solution:
-    total_distance += calc_dist_route(savings, route)
-print(f"Total distance: {total_distance}")
