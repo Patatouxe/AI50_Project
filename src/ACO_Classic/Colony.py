@@ -7,14 +7,14 @@ import concurrent.futures as cf
 
 class Colony:
     
-    def __init__(self, cvrpInstance, nbrAnts, nbrIter, alpha, beta, gamma, evapRate,theta, Q):
+    def __init__(self, cvrpInstance, nbrIter, alpha, beta, gamma, evapRate,theta, Q):
         #print(cvrpInstance.node_coord)
         self.cvrpInstance = cvrpInstance
         self.computeMatrixD(cvrpInstance)
         self.matrixP = [[1.0 for j in range(cvrpInstance.dimension)] for i in range(cvrpInstance.dimension)]
         self.evapRate = evapRate
         self.theta = theta
-        self.nbrAnts = nbrAnts
+        self.nbrAnts = cvrpInstance.dimension
         self.nbrIter = nbrIter
         self.alpha = alpha
         self.beta = beta
@@ -54,27 +54,11 @@ class Colony:
 
         #lock = Lock()
 
-        for iter in range(self.nbrIter):
+        for _ in range(self.nbrIter):
             antsSolutions = []
             antsCosts = []
-            try :
-                with cf.ThreadPoolExecutor(max_workers=self.nbrAnts) as executor:
-                    future_ants = [executor.submit(self.antSolution) for _ in range(self.nbrAnts)]
-                    for future in cf.as_completed(future_ants):
-                        solution, cost = future.result()
-                        antsSolutions.append(solution)
-                        antsCosts.append(cost)
-            except Exception as error:
-                raise Exception(str(error))
-                
-            for solution, cost in zip(antsSolutions,antsCosts):
-
-                #Update the best solution found
-                if cost < bestCost:
-                    bestSol = solution
-                    bestCost = cost
             
-            """ for ant in range(self.nbrAnts):
+            for ant in range(self.nbrAnts):
                 solution, cost = self.antSolution()
                 antsSolutions.append(solution)
                 antsCosts.append(cost)
@@ -82,7 +66,7 @@ class Colony:
                 # Update best solution
                 if cost < bestCost:
                     bestSol = solution
-                    bestCost = cost """
+                    bestCost = cost
             
             self.pheromonUpdate(antsSolutions,antsCosts)
         
