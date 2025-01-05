@@ -2,15 +2,14 @@
 
 import math
 import random as rand
-import concurrent.futures as cf
-#from threading import Lock
+from src.CVRP import Route
 
 class Colony:
     
     def __init__(self, cvrpInstance, nbrIter, alpha, beta, gamma, evapRate,theta, Q):
         #print(cvrpInstance.node_coord)
         self.cvrpInstance = cvrpInstance
-        self.computeMatrixD(cvrpInstance)
+        self.computeMatrixD()
         self.matrixP = [[1.0 for j in range(cvrpInstance.dimension)] for i in range(cvrpInstance.dimension)]
         self.evapRate = evapRate
         self.theta = theta
@@ -21,7 +20,7 @@ class Colony:
         self.gamma = gamma
         self.Q = Q
 
-    def computeMatrixD(self,cvrpInstance):
+    def computeMatrixD(self):
         dimension = self.cvrpInstance.dimension
         node_coord = self.cvrpInstance.node_coord
         self.matrixD = []
@@ -42,9 +41,10 @@ class Colony:
         for solution, cost in zip(solutions,costs):
             pheromone = self.Q/cost
             for route in solution:
-                for i in range(len(route)):
-                    current_node = route[i]
-                    next_node = route[i+1] if i+1<len(route) else 1 # Return to depot
+                routeArray = route.customers
+                for i in range(len(routeArray)):
+                    current_node = routeArray[i]
+                    next_node = routeArray[i+1] if i+1<len(routeArray) else 1 # Return to depot
                     self.matrixP[current_node-1][next_node-1] += pheromone
                     self.matrixP[next_node-1][current_node-1] += pheromone
 
@@ -58,7 +58,7 @@ class Colony:
             antsSolutions = []
             antsCosts = []
             
-            for ant in range(self.nbrAnts):
+            for _ in range(self.nbrAnts):
                 solution, cost = self.antSolution()
                 antsSolutions.append(solution)
                 antsCosts.append(cost)
@@ -86,7 +86,7 @@ class Colony:
                 route = [1] #We Begin the route at the depot (used to update the pheromones from the depot to location #1)
                 remainingCap = capacity
                 current_node = 1 #Beginning from Depot
-
+                route_cost = 0
                 while True:
                     probabilities = []
                     
@@ -113,11 +113,12 @@ class Colony:
                     route.append(next_node)
                     unvisited.remove(next_node)
                     remainingCap -= demands[next_node]
-                    total_cost += self.matrixD[current_node-1][next_node-1]
+                    route_cost += self.matrixD[current_node-1][next_node-1]
                     current_node = next_node
                 
                 #Return to depot
-                total_cost += self.matrixD[current_node-1][0]
-                solution.append(route)
+                route_cost += self.matrixD[current_node-1][0]
+                total_cost += route_cost
+                solution.append(Route(route[1:],remainingCap,route_cost))
             
         return solution, total_cost
