@@ -606,7 +606,7 @@ class MACS_CVRP:
         return balanced_solution
 
     def run(self, max_iterations: int) -> Tuple[List[Route], float, int]:
-        update_plot =self.visualize_process()
+        #update_plot =self.visualize_process()
 
         try:
             for iteration in range(max_iterations):
@@ -647,8 +647,8 @@ class MACS_CVRP:
                 self.best_solution = self.maintain_solution_diversity(self.best_solution)
                 self.best_solution = self.balance_vehicle_capacity(self.best_solution)
 
-                #UPdate visualization
-                update_plot(iteration, solution_vei if distance_vei < distance_dist else solution_dist, self.pheromone)
+                # Update visualization
+                # update_plot(iteration, solution_vei if distance_vei < distance_dist else solution_dist, self.pheromone)
                 self.history['distances'].append(winning_distance)
                 self.history['vehicles'].append(len(winnin_solution))
 
