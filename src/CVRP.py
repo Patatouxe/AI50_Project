@@ -116,9 +116,4 @@ class CVRP:
 
         return True, "Solution is Feasible"
 
-if __name__ == "__main__":
-    n32 = CVRP("data/tai/tai75a.vrp")
-    print(n32)
-    #print(n32.depot[0] )
-
     
