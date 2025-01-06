@@ -115,5 +115,3 @@ class CVRP:
             return False, f"Unvisited customers: {missing}"
 
         return True, "Solution is Feasible"
-
-    

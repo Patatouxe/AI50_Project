@@ -56,7 +56,7 @@ class CVRPApp:
 
         self.selected_algorithms = {
             "Savings": tk.BooleanVar(),
-            "ACO Colony": tk.BooleanVar(),
+            "MACS": tk.BooleanVar(),
             "Genetic Algorithm": tk.BooleanVar(),
             "Classical ACO": tk.BooleanVar()
         }
@@ -161,7 +161,7 @@ class CVRPApp:
             if self.selected_algorithms["Savings"].get():
                 self.run_savings(cvrp_instance, file)
 
-            if self.selected_algorithms["ACO Colony"].get():
+            if self.selected_algorithms["MACS"].get():
                 self.run_aco(cvrp_instance, file)
 
             if self.selected_algorithms["Genetic Algorithm"].get():
@@ -192,9 +192,9 @@ class CVRPApp:
         try:
             solution, distance, _ = macs_solver.run(200)
             end_time = time.time()
-            self.add_result(file, "ACO Colony", distance, end_time - start_time, solution)
+            self.add_result(file, "MACS", distance, end_time - start_time, solution)
         except Exception as e:
-            messagebox.showerror("Error", f"Error running ACO Colony algorithm on {file}: {str(e)}")
+            messagebox.showerror("Error", f"Error running MACS algorithm on {file}: {str(e)}")
 
     def run_genetic(self, cvrp_instance, file):
         start_time = time.time()
