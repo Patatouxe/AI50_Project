@@ -106,6 +106,9 @@ class CVRPApp:
         self.results_tree.heading("Algorithm", text="Algorithm")
         self.results_tree.heading("Distance", text="Distance")
         self.results_tree.heading("Time", text="Time (s)")
+        self.results_tree.bind("<Double-1>", self.view_details)
+        self.results_tree.bind("<Motion>", self.on_mouse_over_tree)
+        self.results_tree.bind("<Leave>", self.on_mouse_leave_tree)
         self.results_tree.grid(row=0, column=0, sticky="nsew", padx=10, pady=5)
 
         scrollbar = ttk.Scrollbar(results_frame, orient="vertical", command=self.results_tree.yview)
