@@ -10,7 +10,7 @@ from src.Saving_Algo.saving_class import Savings
 from src.ACO_MACS.aco_colony import MACS_CVRP
 from src.Gen_Algo.AG import GeneticAlgorithmCVRP
 from src.ACO.aco import Colony
-
+    
 class CVRPApp:
     """
     A GUI application for solving the Capacitated Vehicle Routing Problem (CVRP) using various algorithms.
@@ -35,10 +35,15 @@ class CVRPApp:
         self.selected_algorithms = {}
         self.solution_details = {}
 
-        # Apply styling
-        self.style = ttk.Style()
-        self.style.configure("Treeview", rowheight=25, font=("Arial", 10))
-        self.style.configure("Treeview.Heading", font=("Arial", 12, "bold"))
+        # Configure root grid
+        self.root.rowconfigure(0, weight=1)
+        self.root.columnconfigure(0, weight=1)
+
+        # Create a main frame
+        self.main_frame = tk.Frame(self.root)
+        self.main_frame.grid(row=0, column=0, sticky="nsew")
+        self.main_frame.rowconfigure(4, weight=1)  # Allow results to expand
+        self.main_frame.columnconfigure(0, weight=1)
 
         # Create GUI components
         self.create_widgets()
@@ -48,32 +53,27 @@ class CVRPApp:
         Create and layout all GUI components for the application.
         """
         # Header
-        header = tk.Label(self.root, text="CVRP Solver GUI", font=("Arial", 18, "bold"), bg="#003366", fg="white")
-        header.pack(fill="x")
+        header = tk.Label(self.main_frame, text="CVRP Solver GUI", font=("Arial", 18, "bold"), bg="#003366", fg="white")
+        header.grid(row=0, column=0, columnspan=2, sticky="ew", padx=10, pady=10)
 
         # File selection frame
-        file_frame = tk.Frame(self.root, bg="#f0f0f0")
-        file_frame.pack(padx=10, pady=10, fill="x")
+        file_frame = tk.LabelFrame(self.main_frame, text="Select Data Files", font=("Arial", 12))
+        file_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=10)
+        file_frame.columnconfigure(0, weight=1)
 
-        tk.Label(file_frame, text="Select Data Files:", font=("Arial", 12), bg="#f0f0f0").pack(anchor="w", pady=5)
-        self.file_listbox = tk.Listbox(file_frame, selectmode=tk.MULTIPLE, height=10, font=("Arial", 10), activestyle='none')
-        self.file_listbox.pack(padx=5, pady=5, fill="x")
-        self.file_listbox.bind("<Motion>", self.on_mouse_over)
-        self.file_listbox.bind("<Leave>", self.on_mouse_leave)
+        self.file_listbox = tk.Listbox(file_frame, selectmode=tk.MULTIPLE, height=5, font=("Arial", 10))
+        self.file_listbox.grid(row=0, column=0, sticky="ew", padx=10, pady=5)
 
-        file_buttons_frame = tk.Frame(file_frame, bg="#f0f0f0")
-        file_buttons_frame.pack(pady=5)
+        file_buttons_frame = tk.Frame(file_frame)
+        file_buttons_frame.grid(row=1, column=0, sticky="ew", pady=5)
+        file_buttons_frame.columnconfigure([0, 1], weight=1)
 
-        tk.Button(file_buttons_frame, text="Add Files", command=self.add_files, bg="#007acc", fg="white", font=("Arial", 10)).pack(side="left", padx=5)
-        tk.Button(file_buttons_frame, text="Remove Selected Files", command=self.remove_selected_files, bg="#007acc", fg="white", font=("Arial", 10)).pack(side="left", padx=5)
+        tk.Button(file_buttons_frame, text="Add Files", command=self.add_files, bg="#007acc", fg="white").grid(row=0, column=0, sticky="ew", padx=5)
+        tk.Button(file_buttons_frame, text="Remove Selected Files", command=self.remove_selected_files, bg="#007acc", fg="white").grid(row=0, column=1, sticky="ew", padx=5)
 
         # Algorithm selection frame
-        algo_frame = tk.Frame(self.root, bg="#f0f0f0")
-        algo_frame.pack(padx=10, pady=10, fill="x")
-
-        tk.Label(algo_frame, text="Select Algorithms to Run:", font=("Arial", 12), bg="#f0f0f0").pack(anchor="w", pady=5)
-        self.algorithms_frame = tk.Frame(algo_frame, bg="#f0f0f0")
-        self.algorithms_frame.pack(pady=5)
+        algo_frame = tk.LabelFrame(self.main_frame, text="Select Algorithms to Run", font=("Arial", 12))
+        algo_frame.grid(row=2, column=0, columnspan=2, sticky="ew", padx=10, pady=10)
 
         self.selected_algorithms = {
             "Savings": tk.BooleanVar(),
@@ -81,52 +81,45 @@ class CVRPApp:
             "Genetic Algorithm": tk.BooleanVar(),
             "Classical ACO": tk.BooleanVar()
         }
-        for algo, var in self.selected_algorithms.items():
-            tk.Checkbutton(self.algorithms_frame, text=algo, variable=var, font=("Arial", 10), bg="#f0f0f0").pack(anchor="w")
+        for i, (algo, var) in enumerate(self.selected_algorithms.items()):
+            tk.Checkbutton(algo_frame, text=algo, variable=var, font=("Arial", 10)).grid(row=i, column=0, sticky="w", padx=10)
 
         # Run button
-        tk.Button(self.root, text="Run Selected Algorithms", command=self.run_algorithms, bg="#28a745", fg="white", font=("Arial", 12)).pack(pady=10)
+        tk.Button(self.main_frame, text="Run Selected Algorithms", command=self.run_algorithms, bg="#28a745", fg="white").grid(row=3, column=0, columnspan=2, sticky="ew", padx=10, pady=10)
 
         # Results filtering frame
-        filter_frame = tk.Frame(self.root, bg="#f0f0f0")
-        filter_frame.pack(padx=10, pady=10, fill="x")
+        filter_frame = tk.LabelFrame(self.main_frame, text="Select Data to View Results", font=("Arial", 12))
+        filter_frame.grid(row=4, column=0, columnspan=2, sticky="ew", padx=10, pady=10)
+        filter_frame.columnconfigure(0, weight=1)
 
-        tk.Label(filter_frame, text="Select Data to View Results:", font=("Arial", 12), bg="#f0f0f0").pack(anchor="w", pady=5)
-        self.data_filter_combo = ttk.Combobox(filter_frame, state="readonly", font=("Arial", 10))
-        self.data_filter_combo.pack(fill="x", padx=5, pady=5)
-        self.data_filter_combo.bind("<<ComboboxSelected>>", self.filter_results)
+        self.data_filter_combo = ttk.Combobox(filter_frame, state="readonly")
+        self.data_filter_combo.grid(row=0, column=0, sticky="ew", padx=10, pady=5)
 
-        # Results table frame
-        results_frame = tk.Frame(self.root, bg="#f0f0f0")
-        results_frame.pack(padx=10, pady=10, fill="both", expand=True)
-
-        tk.Label(results_frame, text="Results:", font=("Arial", 12), bg="#f0f0f0").pack(anchor="w", pady=5)
+        # Results table
+        results_frame = tk.LabelFrame(self.main_frame, text="Results", font=("Arial", 12))
+        results_frame.grid(row=5, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
+        results_frame.rowconfigure(0, weight=1)
+        results_frame.columnconfigure(0, weight=1)
 
         self.results_tree = ttk.Treeview(results_frame, columns=("File", "Algorithm", "Distance", "Time"), show="headings")
         self.results_tree.heading("File", text="File")
         self.results_tree.heading("Algorithm", text="Algorithm")
         self.results_tree.heading("Distance", text="Distance")
         self.results_tree.heading("Time", text="Time (s)")
-        self.results_tree.bind("<Double-1>", self.view_details)
-        self.results_tree.bind("<Motion>", self.on_mouse_over_tree)
-        self.results_tree.bind("<Leave>", self.on_mouse_leave_tree)
-        self.results_tree.pack(pady=5, padx=5, fill="both", expand=True)
+        self.results_tree.grid(row=0, column=0, sticky="nsew", padx=10, pady=5)
 
-        # Scrollbar for the results table
         scrollbar = ttk.Scrollbar(results_frame, orient="vertical", command=self.results_tree.yview)
         self.results_tree.configure(yscroll=scrollbar.set)
-        scrollbar.pack(side="right", fill="y")
-        
-        # Buttons frame for comparison and export
-        buttons_frame = tk.Frame(self.root, bg="#f0f0f0")
-        buttons_frame.pack(pady=10)
+        scrollbar.grid(row=0, column=1, sticky="ns")
 
-        # Comparison Analysis button
-        tk.Button(buttons_frame, text="Comparison Analysis", command=self.comparison_analysis, bg="#007acc", fg="white", font=("Arial", 12)).pack(side="left", padx=10)
+        # Buttons for analysis and export
+        buttons_frame = tk.Frame(self.main_frame)
+        buttons_frame.grid(row=6, column=0, columnspan=2, sticky="ew", pady=10)
+        buttons_frame.columnconfigure([0, 1], weight=1)
 
-        # Export to CSV button
-        tk.Button(buttons_frame, text="Export to CSV", command=self.export_to_csv, bg="#ffc107", fg="black", font=("Arial", 12)).pack(side="left", padx=10)
-    
+        tk.Button(buttons_frame, text="Comparison Analysis", command=self.comparison_analysis, bg="#007acc", fg="white").grid(row=0, column=0, sticky="ew", padx=10)
+        tk.Button(buttons_frame, text="Export to CSV", command=self.export_to_csv, bg="#ffc107", fg="black").grid(row=0, column=1, sticky="ew", padx=10)
+   
     def add_files(self):
         """
         Add selected data files to the list.
