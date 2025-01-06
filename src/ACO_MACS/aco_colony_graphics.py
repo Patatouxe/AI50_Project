@@ -1,5 +1,5 @@
 #Author : Daniel_JK
-#MACS code without graphics for CVRPApps
+
 
 from matplotlib import cm , pyplot as plt
 import random
@@ -606,7 +606,7 @@ class MACS_CVRP:
         return balanced_solution
 
     def run(self, max_iterations: int) -> Tuple[List[Route], float, int]:
-        #update_plot =self.visualize_process()
+        update_plot =self.visualize_process()
 
         try:
             for iteration in range(max_iterations):
@@ -827,3 +827,4 @@ class MACS_CVRP:
 
         ax.grid(True)
         ax.legend(bbox_to_anchor=(1.05, 1))
+
