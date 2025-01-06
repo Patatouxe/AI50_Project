@@ -1,15 +1,44 @@
+#@Author : tmayer
 import re
 from typing import Tuple, List, Optional
 from dataclasses import dataclass
 
 @dataclass
 class Route:
+    """
+    Represents a route for the CVRP solution.
+
+    Attributes:
+        customers (List[int]): The list of customer nodes included in the route.
+        capacity (float): The total demand served by the route.
+        distance (float): The total distance traveled in the route.
+    """
     customers: List[int]
     capacity: float
     distance: float
 
 class CVRP:
+    """
+    A class for modeling and solving the Capacitated Vehicle Routing Problem (CVRP).
+
+    Attributes:
+        name (str): The name of the problem instance.
+        dimension (int): The number of nodes (customers + depot).
+        capacity (int): The capacity of each vehicle.
+        num_trucks (int): The number of trucks available.
+        node_coord (dict): Coordinates of each node as {node_id: (x, y)}.
+        demand (dict): The demand for each node as {node_id: demand}.
+        depot (List[int]): List of depot node IDs.
+        cout (float): Cost metric (optional, may depend on implementation).
+        solution (dict): Placeholder for storing solutions (optional).
+    """
     def __init__(self, path):
+        """
+        Initialize the CVRP instance by loading data from a given file.
+
+        Args:
+            path (str): Path to the problem instance file.
+        """
         self.name = ""
         self.dimension = 0
         self.capacity = 0
@@ -23,6 +52,12 @@ class CVRP:
         self.load_data(path)
 
     def load_data(self, path):
+        """
+        Parse and load the problem instance data from the given file.
+
+        Args:
+            path (str): Path to the problem instance file.
+        """
         with open(path, 'r') as file:
             section = None
             for line in file:
@@ -67,6 +102,12 @@ class CVRP:
                     self.depot.append(node_id)
 
     def __repr__(self):
+        """
+        Represent the CVRP instance in a human-readable format.
+
+        Returns:
+            str: A formatted string with the details of the CVRP instance.
+        """
         details = [
             f"Name: {self.name}",
             f"Dimension: {self.dimension}",
@@ -84,6 +125,16 @@ class CVRP:
         return "\n".join(details + [node_coords_section, demands_section])
 
     def format_solution(self, routes: List[Route], total_distance: float) -> str:
+        """
+        Format the solution for presentation.
+
+        Args:
+            routes (List[Route]): The list of routes in the solution.
+            total_distance (float): The total distance of the solution.
+
+        Returns:
+            str: A formatted string representing the solution.
+        """
         output_lines = []
 
         for i , route in enumerate(routes, 1):
@@ -97,6 +148,15 @@ class CVRP:
 
 
     def validate_solution(self, routes: List[Route]) -> Tuple[bool, str]:
+        """
+        Validate the feasibility of a given solution.
+
+        Args:
+            routes (List[Route]): The list of routes to validate.
+
+        Returns:
+            Tuple[bool, str]: A tuple containing a boolean indicating feasibility and a message.
+        """
         visited_solution = set()
 
         # Check if the solution is feasible

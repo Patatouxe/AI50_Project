@@ -4,20 +4,46 @@ from typing import List, Tuple
 from src.CVRP import CVRP, Route
 
 class Savings:
+    """
+    Implements the Savings Algorithm for solving the Capacitated Vehicle Routing Problem (CVRP).
+
+    Attributes:
+        cvrp (CVRP): An instance of the CVRP class containing problem data.
+        routes (List[Route]): A list of initial routes, where each route starts with a single customer.
+    """
     def __init__(self, cvrp_instance):
+        """
+        Initialize the Savings algorithm with a CVRP instance.
+
+        Args:
+            cvrp_instance (CVRP): An instance of the CVRP class.
+        """
         self.cvrp = cvrp_instance
         self.routes = self.initialize_routes()
 
     @staticmethod
     def calculate_distance(coord1, coord2):
         """
-        Calculate Euclidean distance between two coordinates.
+        Calculate the Euclidean distance between two coordinates.
+
+        Args:
+            coord1 (Tuple[float, float]): The (x, y) coordinates of the first point.
+            coord2 (Tuple[float, float]): The (x, y) coordinates of the second point.
+
+        Returns:
+            float: The Euclidean distance between the two points.
         """
         return sqrt((coord1[0] - coord2[0]) ** 2 + (coord1[1] - coord2[1]) ** 2)
 
     def calculate_route_cost(self, route: List[int]) -> float:
         """
         Calculate the total distance of a route, including the return to the depot.
+
+        Args:
+            route (List[int]): A list of nodes representing the route.
+
+        Returns:
+            float: The total distance of the route.
         """
         depot = self.cvrp.depot[0]
         cost = 0
@@ -37,7 +63,10 @@ class Savings:
 
     def initialize_routes(self) -> List[Route]:
         """
-        Initialize routes with each customer as a separate route.
+        Initialize the routes by assigning each customer to a separate route.
+
+        Returns:
+            List[Route]: A list of initial routes.
         """
         routes = []
         for customer in range(1, self.cvrp.dimension + 1):
@@ -53,7 +82,11 @@ class Savings:
 
     def calculate_savings(self) -> List[Tuple[float, int, int]]:
         """
-        Calculate savings for every pair of customers and sort them in descending order.
+        Calculate savings for each pair of customers based on the distance.
+
+        Returns:
+            List[Tuple[float, int, int]]: A sorted list of savings in the format (saving, customer_i, customer_j),
+                                          sorted in descending order of savings.
         """
         savings = []
         depot = self.cvrp.depot[0]
@@ -79,6 +112,13 @@ class Savings:
     def merge_routes(self, route_i: Route, route_j: Route) -> Route:
         """
         Merge two routes if feasible.
+
+        Args:
+            route_i (Route): The first route.
+            route_j (Route): The second route.
+
+        Returns:
+            Route: The merged route.
         """
         # Remove the depot from the ends of both routes
         merged_customers = route_i.customers[:-1] + route_j.customers[1:]
@@ -91,7 +131,10 @@ class Savings:
 
     def run(self) -> Tuple[List[Route], float]:
         """
-        Execute the Savings Algorithm.
+        Execute the Savings Algorithm to solve the CVRP.
+
+        Returns:
+            Tuple[List[Route], float]: A tuple containing the final list of routes and the total distance.
         """
         savings = self.calculate_savings()
 

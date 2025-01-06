@@ -1,3 +1,4 @@
+#@Author : tmayer
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 import os
@@ -11,7 +12,23 @@ from src.Gen_Algo.AG import GeneticAlgorithmCVRP
 from src.ACO.aco import Colony
 
 class CVRPApp:
+    """
+    A GUI application for solving the Capacitated Vehicle Routing Problem (CVRP) using various algorithms.
+    Allows users to select data files, choose algorithms, view results, and analyze performance.
+
+    Attributes:
+        root (tk.Tk): The root Tkinter window.
+        files (List[str]): List of selected CVRP data files.
+        selected_algorithms (Dict[str, tk.BooleanVar]): Selected algorithms for execution.
+        solution_details (Dict): Stores solution details for each file and algorithm.
+    """
     def __init__(self, root):
+        """
+        Initialize the CVRPApp GUI with necessary components.
+
+        Args:
+            root (tk.Tk): The root Tkinter window.
+        """
         self.root = root
         self.root.title("CVRP Solver GUI")
         self.files = []
@@ -27,6 +44,9 @@ class CVRPApp:
         self.create_widgets()
 
     def create_widgets(self):
+        """
+        Create and layout all GUI components for the application.
+        """
         # Header
         header = tk.Label(self.root, text="CVRP Solver GUI", font=("Arial", 18, "bold"), bg="#003366", fg="white")
         header.pack(fill="x")
@@ -108,6 +128,9 @@ class CVRPApp:
         tk.Button(buttons_frame, text="Export to CSV", command=self.export_to_csv, bg="#ffc107", fg="black", font=("Arial", 12)).pack(side="left", padx=10)
     
     def add_files(self):
+        """
+        Add selected data files to the list.
+        """
         selected_files = filedialog.askopenfilenames(title="Select Data Files")
         for file in selected_files:
             if file not in self.files:
@@ -115,6 +138,9 @@ class CVRPApp:
                 self.file_listbox.insert(tk.END, os.path.basename(file))
 
     def remove_selected_files(self):
+        """
+        Remove the selected files from the list.
+        """
         selected_indices = self.file_listbox.curselection()
         for index in reversed(selected_indices):
             self.file_listbox.delete(index)
@@ -144,6 +170,9 @@ class CVRPApp:
             self.results_tree.tag_configure(row, background="white")
 
     def run_algorithms(self):
+        """
+        Run the selected algorithms on the chosen files and display results.
+        """
         if not self.files:
             messagebox.showerror("Error", "No files selected!")
             return
@@ -185,6 +214,13 @@ class CVRPApp:
             self.filter_results()
 
     def run_savings(self, cvrp_instance, file):
+        """
+        Run the Savings algorithm on the given CVRP instance and record the results.
+
+        Args:
+            cvrp_instance (CVRP): The CVRP instance to solve.
+            file (str): The file name associated with the CVRP instance.
+        """
         start_time = time.time()
         savings_solver = Savings(cvrp_instance)
         try:
@@ -195,6 +231,13 @@ class CVRPApp:
             messagebox.showerror("Error", f"Error running Savings algorithm on {file}: {str(e)}")
 
     def run_aco(self, cvrp_instance, file):
+        """
+        Run the MACS (Ant Colony Optimization) algorithm on the given CVRP instance.
+
+        Args:
+            cvrp_instance (CVRP): The CVRP instance to solve.
+            file (str): The file name associated with the CVRP instance.
+        """
         start_time = time.time()
         macs_solver = MACS_CVRP(cvrp_instance)
         try:
@@ -205,6 +248,13 @@ class CVRPApp:
             messagebox.showerror("Error", f"Error running MACS algorithm on {file}: {str(e)}")
 
     def run_genetic(self, cvrp_instance, file):
+        """
+        Run the Genetic Algorithm on the given CVRP instance.
+
+        Args:
+            cvrp_instance (CVRP): The CVRP instance to solve.
+            file (str): The file name associated with the CVRP instance.
+        """
         start_time = time.time()
         ga_solver = GeneticAlgorithmCVRP(cvrp_instance, generations=200, population_size=100, mutation_rate=0.05)
         try:
@@ -215,6 +265,13 @@ class CVRPApp:
             messagebox.showerror("Error", f"Error running Genetic Algorithm on {file}: {str(e)}")
 
     def run_classical_aco(self, cvrp_instance, file):
+        """
+        Run the Classical Ant Colony Optimization (ACO) algorithm on the given CVRP instance.
+
+        Args:
+            cvrp_instance (CVRP): The CVRP instance to solve.
+            file (str): The file name associated with the CVRP instance.
+        """
         start_time = time.time()
         colony = Colony(cvrp_instance, nbrIter=200, alpha=1.0, beta=2.0, gamma=1.0, evapRate=0.5, theta=0.1, Q=100)
         try:
@@ -225,7 +282,9 @@ class CVRPApp:
             messagebox.showerror("Error", f"Error running Classical ACO algorithm on {file}: {str(e)}")
 
     def export_to_csv(self):
-        """Export the displayed results to a CSV file."""
+        """
+        Export the displayed results to a CSV file.
+        """
         if not self.results_tree.get_children():
             messagebox.showerror("Error", "No results to export!")
             return
@@ -258,6 +317,16 @@ class CVRPApp:
             messagebox.showerror("Error", f"Failed to export results: {str(e)}")
 
     def add_result(self, file, algorithm, distance, execution_time, solution):
+        """
+        Add a result entry to the results table and store details for analysis.
+
+        Args:
+            file (str): The file name of the CVRP instance.
+            algorithm (str): The name of the algorithm used.
+            distance (float): The total distance of the solution.
+            execution_time (float): The execution time in seconds.
+            solution (List[Route]): The solution routes.
+        """
         file_basename = os.path.basename(file)
         self.results_tree.insert(
             "", tk.END,
@@ -271,6 +340,12 @@ class CVRPApp:
         }
 
     def filter_results(self, event=None):
+        """
+        Filter and display results for the selected file in the dropdown menu.
+
+        Args:
+            event: Optional event parameter for binding to UI interactions.
+        """
         selected_file = self.data_filter_combo.get()
         if not selected_file:
             return
@@ -294,6 +369,12 @@ class CVRPApp:
                 )
 
     def view_details(self, event):
+        """
+        Display detailed solution routes in a separate window.
+
+        Args:
+            event: The event triggered by double-clicking a result.
+        """
         selected_item = self.results_tree.selection()
         if not selected_item:
             return
@@ -314,6 +395,9 @@ class CVRPApp:
             text_widget.pack(padx=10, pady=10)
 
     def comparison_analysis(self):
+        """
+        Perform a comparative analysis of algorithms for the selected file, visualizing distance and time metrics.
+        """
         selected_file = self.data_filter_combo.get()
         if not selected_file or selected_file not in self.solution_details:
             messagebox.showerror("Error", "No data available for comparison analysis!")
