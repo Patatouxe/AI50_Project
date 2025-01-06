@@ -436,6 +436,17 @@ class MACS_CVRP:
         return sqrt((xi - xj) ** 2 + (yi - yj) ** 2)
 
     def local_pheromone_update(self, i: int, j: int):
+        """
+           Perform a local pheromone update on the edge between nodes i and j.
+
+           This method updates the pheromone level on the edge between nodes i and j
+           by applying a decay factor and adding a deposit amount. It also resets the
+           inactivity count for the edge.
+
+           Parameters:
+           i (int): The starting node of the edge.
+           j (int): The ending node of the edge.
+           """
         decay = 1.0 - self.local_rho
         deposit = self.local_rho * self.min_pheromon
 
@@ -449,6 +460,16 @@ class MACS_CVRP:
         self.inactive_count[j][i] = 0
 
     def global_pheromone_update(self, best_solution: List[Route]):
+        """
+            Perform a global pheromone update based on the best solution found.
+
+            This method updates the pheromone levels on the edges of the best solution
+            by applying a global evaporation rate and depositing pheromone proportional
+            to the inverse of the total distance of the solution.
+
+            Parameters:
+            best_solution (List[Route]): The best solution found by the algorithm.
+            """
         self.pheromone *= (1.0 - self.rho)
 
         total_distance = sum(route.distance for route in best_solution)
@@ -465,6 +486,13 @@ class MACS_CVRP:
             self.pheromone[self.depot][prev] = self.pheromone[prev][self.depot]
 
     def handle_inactivity(self):
+        """
+            Handle pheromone evaporation and reinforcement based on inactivity.
+
+            This method increases the inactivity count for all edges, applies local
+            evaporation to inactive pheromones, and reinforces strong pheromone trails.
+            It ensures that pheromone levels remain within the specified bounds.
+            """
         self.inactive_count += 1
         evaporation_rate = np.clip(0.1 * (self.inactive_count / 10), 0.1, 0.9)
         inactive_mask = self.inactive_count > 10
