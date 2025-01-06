@@ -3,99 +3,120 @@ from math import sqrt
 from typing import List, Tuple
 from src.CVRP import CVRP, Route
 
-
 class Savings:
-    def __init__(self, cvrp_instance: CVRP):
+    def __init__(self, cvrp_instance):
         self.cvrp = cvrp_instance
         self.routes = self.initialize_routes()
+
+    @staticmethod
+    def calculate_distance(coord1, coord2):
+        """
+        Calculate Euclidean distance between two coordinates.
+        """
+        return sqrt((coord1[0] - coord2[0]) ** 2 + (coord1[1] - coord2[1]) ** 2)
+
+    def calculate_route_cost(self, route: List[int]) -> float:
+        """
+        Calculate the total distance of a route, including the return to the depot.
+        """
+        depot = self.cvrp.depot[0]
+        cost = 0
+        current_location = depot
+
+        for node in route:
+            cost += self.calculate_distance(
+                self.cvrp.node_coord[current_location], self.cvrp.node_coord[node]
+            )
+            current_location = node
+
+        # Add the distance back to the depot
+        cost += self.calculate_distance(
+            self.cvrp.node_coord[current_location], self.cvrp.node_coord[depot]
+        )
+        return cost
 
     def initialize_routes(self) -> List[Route]:
         """
         Initialize routes with each customer as a separate route.
         """
-        return [Route(
-            customers=[self.cvrp.depot[0], i, self.cvrp.depot[0]],
-            capacity=self.cvrp.demand[i],
-            distance=2*self.calc_dist_2nodes(self.cvrp.depot[0], i),      
-        ) for i in range(2, self.cvrp.dimension + 1)]
+        routes = []
+        for customer in range(1, self.cvrp.dimension + 1):
+            distance = self.calculate_route_cost([customer])
+            routes.append(
+                Route(
+                    customers=[self.cvrp.depot[0], customer, self.cvrp.depot[0]],
+                    capacity=self.cvrp.demand[customer],
+                    distance=distance,
+                )
+            )
+        return routes
 
-    def calculate_savings(self) -> List[Tuple[float, Route, Route]]:
+    def calculate_savings(self) -> List[Tuple[float, int, int]]:
         """
-        Calculate savings for each pair of routes.
+        Calculate savings for every pair of customers and sort them in descending order.
         """
         savings = []
-        for route_i in self.routes:
-            route_i_trimmed = route_i.customers[:-1]
-            for route_j in self.routes:
-                route_j_trimmed = route_j.customers[:-1]
-                if route_i_trimmed == route_j_trimmed:
-                    continue
-                saving = (self.calc_dist_route(route_i) +
-                          self.calc_dist_route(route_j) -
-                          self.calc_dist_2nodes(route_i_trimmed[-1], route_j_trimmed[0]))
-                savings.append((saving, route_i, route_j))
+        depot = self.cvrp.depot[0]
+
+        for i in range(1, self.cvrp.dimension + 1):
+            for j in range(i + 1, self.cvrp.dimension + 1):
+                # Calculate distances
+                dist_depot_i = self.calculate_distance(self.cvrp.node_coord[depot], self.cvrp.node_coord[i])
+                dist_depot_j = self.calculate_distance(self.cvrp.node_coord[depot], self.cvrp.node_coord[j])
+                dist_i_j = self.calculate_distance(self.cvrp.node_coord[i], self.cvrp.node_coord[j])
+
+                # Compute savings
+                saving = dist_depot_i + dist_depot_j - dist_i_j
+
+                # Only consider valid savings (savings must be positive)
+                if saving > 0:
+                    savings.append((saving, i, j))
+
         # Sort savings in descending order
-        for i in range(len(savings)):
-            for j in range(i, len(savings)):
-                if savings[i][0] < savings[j][0]:
-                    savings[i], savings[j] = savings[j], savings[i]
+        savings.sort(reverse=True, key=lambda x: x[0])
         return savings
 
-    def calc_dist_2nodes(self, node1: int, node2: int) -> float:
+    def merge_routes(self, route_i: Route, route_j: Route) -> Route:
         """
-        Calculate distance between two nodes.
+        Merge two routes if feasible.
         """
-        x = self.cvrp.node_coord[node1][0] - self.cvrp.node_coord[node2][0]
-        y = self.cvrp.node_coord[node1][1] - self.cvrp.node_coord[node2][1]
-        return sqrt(x**2 + y**2)
+        # Remove the depot from the ends of both routes
+        merged_customers = route_i.customers[:-1] + route_j.customers[1:]
+        merged_capacity = route_i.capacity + route_j.capacity
 
-    def merge_routes(self, i: int, j: int) -> None:
-        """
-        Merge two routes.
-        """
-        new_route = Route(
-            customers=self.routes[i].customers[:-1] + self.routes[j].customers[1:],
-            capacity=self.routes[i].capacity + self.routes[j].capacity,
-            distance=self.routes[i].distance + self.routes[j].distance-self.calc_dist_2nodes(self.routes[i].customers[-2], self.routes[j].customers[1])
-        )
-        self.routes.pop(j)
-        self.routes.pop(i)
-        self.routes.append(new_route)
+        # Recalculate the distance for the merged route
+        merged_distance = self.calculate_route_cost(merged_customers[1:-1])
 
-    def calc_dist_route(self, route: Route) -> float:
-        """
-        Calculate total distance for a route.
-        """
-        distance = 0
-        for i in range(len(route.customers) - 1):
-            distance += self.calc_dist_2nodes(route.customers[i], route.customers[i + 1])
-        return distance
-
-    def calc_demand_route(self, route: List[int]) -> int:
-        """
-        Calculate total demand for a route.
-        """
-        return sum(self.cvrp.demand[node] for node in route)
+        return Route(customers=merged_customers, capacity=merged_capacity, distance=merged_distance)
 
     def run(self) -> Tuple[List[Route], float]:
         """
-        Execute the savings algorithm.
+        Execute the Savings Algorithm.
         """
-        while len(self.routes) > self.cvrp.num_trucks:
-            savings = self.calculate_savings()
-            for save, route_i, route_j in savings:
-                if len(self.routes) <= self.cvrp.num_trucks:
-                    break
+        savings = self.calculate_savings()
 
-                if route_i not in self.routes or route_j not in self.routes:
-                    continue
+        for saving, i, j in savings:
+            # Find the routes containing customers i and j
+            route_i = None
+            route_j = None
+            for route in self.routes:
+                if i in route.customers[1:-1]:  # Exclude the depot
+                    route_i = route
+                if j in route.customers[1:-1]:  # Exclude the depot
+                    route_j = route
 
-                if (route_i.capacity + route_j.capacity > self.cvrp.capacity):
-                    continue
+            # If i and j are in the same route, skip
+            if route_i is None or route_j is None or route_i == route_j:
+                continue
 
-                i, j = self.routes.index(route_i), self.routes.index(route_j)
-                if save > 0:
-                    self.merge_routes(i, j)
+            # Check if merging is feasible
+            if route_i.capacity + route_j.capacity <= self.cvrp.capacity:
+                # Merge the two routes
+                merged_route = self.merge_routes(route_i, route_j)
+                self.routes.remove(route_i)
+                self.routes.remove(route_j)
+                self.routes.append(merged_route)
 
-        total_distance = sum(self.calc_dist_route(route) for route in self.routes)
+        # Calculate total distance
+        total_distance = sum(route.distance for route in self.routes)
         return self.routes, total_distance

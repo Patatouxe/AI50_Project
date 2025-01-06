@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 import os
 import time
+import csv
 import matplotlib.pyplot as plt
 from src.CVRP import CVRP, Route
 from src.Saving_Algo.saving_class import Savings
@@ -95,10 +96,17 @@ class CVRPApp:
         scrollbar = ttk.Scrollbar(results_frame, orient="vertical", command=self.results_tree.yview)
         self.results_tree.configure(yscroll=scrollbar.set)
         scrollbar.pack(side="right", fill="y")
+        
+        # Buttons frame for comparison and export
+        buttons_frame = tk.Frame(self.root, bg="#f0f0f0")
+        buttons_frame.pack(pady=10)
 
         # Comparison Analysis button
-        tk.Button(self.root, text="Comparison Analysis", command=self.comparison_analysis, bg="#007acc", fg="white", font=("Arial", 12)).pack(pady=10)
+        tk.Button(buttons_frame, text="Comparison Analysis", command=self.comparison_analysis, bg="#007acc", fg="white", font=("Arial", 12)).pack(side="left", padx=10)
 
+        # Export to CSV button
+        tk.Button(buttons_frame, text="Export to CSV", command=self.export_to_csv, bg="#ffc107", fg="black", font=("Arial", 12)).pack(side="left", padx=10)
+    
     def add_files(self):
         selected_files = filedialog.askopenfilenames(title="Select Data Files")
         for file in selected_files:
@@ -216,6 +224,39 @@ class CVRPApp:
         except Exception as e:
             messagebox.showerror("Error", f"Error running Classical ACO algorithm on {file}: {str(e)}")
 
+    def export_to_csv(self):
+        """Export the displayed results to a CSV file."""
+        if not self.results_tree.get_children():
+            messagebox.showerror("Error", "No results to export!")
+            return
+
+        # Open a file dialog to choose the export location
+        file_path = filedialog.asksaveasfilename(
+            title="Save Results as CSV",
+            defaultextension=".csv",
+            filetypes=(("CSV files", "*.csv"), ("All files", "*.*"))
+        )
+        if not file_path:
+            return  # User cancelled the save dialog
+
+        # Extract data from the results_tree
+        data = []
+        for row_id in self.results_tree.get_children():
+            row_data = self.results_tree.item(row_id)["values"]
+            data.append(row_data)
+
+        # Write the data to the CSV file
+        try:
+            with open(file_path, mode="w", newline="", encoding="utf-8") as csv_file:
+                writer = csv.writer(csv_file)
+                # Write headers
+                writer.writerow(["File", "Algorithm", "Distance", "Time (s)"])
+                # Write rows
+                writer.writerows(data)
+            messagebox.showinfo("Success", f"Results successfully exported to {file_path}!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export results: {str(e)}")
+
     def add_result(self, file, algorithm, distance, execution_time, solution):
         file_basename = os.path.basename(file)
         self.results_tree.insert(
@@ -262,7 +303,7 @@ class CVRPApp:
 
         if file in self.solution_details and algorithm in self.solution_details[file]:
             solution = self.solution_details[file][algorithm]["routes"]
-            solution_str = "\n".join([f"Route {i+1}: {route.customers} (Distance: {route.distance:.2f})" for i, route in enumerate(solution)])
+            solution_str = "\n".join([f"Route {i+1}: {route.customers} (Distance: {route.distance:.2f}, Capacity : {route.capacity})" for i, route in enumerate(solution)])
 
             details_window = tk.Toplevel(self.root)
             details_window.title(f"Solution Details - {file} - {algorithm}")
