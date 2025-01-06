@@ -1,10 +1,30 @@
+#@Author : tmayer
 import random
 import math
 from src.CVRP import CVRP, Route
 
 
 class GeneticAlgorithmCVRP:
+    """
+    Implements a Genetic Algorithm (GA) for solving the Capacitated Vehicle Routing Problem (CVRP).
+
+    Attributes:
+        cvrp (CVRP): An instance of the CVRP class containing the problem data.
+        generations (int): The number of generations for the algorithm to run.
+        population_size (int): The number of individuals in the population.
+        mutation_rate (float): The probability of mutation for each individual.
+        population (List[List[Route]]): The current population of solutions.
+    """
     def __init__(self, cvrp_instance, generations=100, population_size=50, mutation_rate=0.1):
+        """
+        Initialize the Genetic Algorithm with parameters and a CVRP instance.
+
+        Args:
+            cvrp_instance (CVRP): The CVRP instance with problem details.
+            generations (int): Number of generations for the algorithm to evolve.
+            population_size (int): Size of the population.
+            mutation_rate (float): Mutation probability for each solution.
+        """
         self.cvrp = cvrp_instance
         self.generations = generations
         self.population_size = population_size
@@ -13,9 +33,28 @@ class GeneticAlgorithmCVRP:
 
     @staticmethod
     def calculate_distance(coord1, coord2):
+        """
+        Calculate the Euclidean distance between two coordinates.
+
+        Args:
+            coord1 (Tuple[float, float]): The (x, y) coordinates of the first point.
+            coord2 (Tuple[float, float]): The (x, y) coordinates of the second point.
+
+        Returns:
+            float: The Euclidean distance between the two points.
+        """
         return math.sqrt((coord1[0] - coord2[0]) ** 2 + (coord1[1] - coord2[1]) ** 2)
 
     def calculate_route_cost(self, route):
+        """
+        Calculate the total distance of a route, including returning to the depot.
+
+        Args:
+            route (List[int]): A list of customer nodes in the route.
+
+        Returns:
+            float: The total distance of the route.
+        """
         cost = 0
         depot = self.cvrp.depot[0]
         current_location = depot
@@ -26,10 +65,22 @@ class GeneticAlgorithmCVRP:
         return cost
 
     def fitness(self, solution):
+        """
+        Calculate the fitness of a solution. Higher fitness corresponds to lower total route cost.
+
+        Args:
+            solution (List[Route]): A solution consisting of a list of routes.
+
+        Returns:
+            float: The fitness value of the solution.
+        """
         total_cost = sum(self.calculate_route_cost(route.customers) for route in solution)
         return 1 / (1 + total_cost)
 
     def initialize_population(self):
+        """
+        Initialize the population with random solutions by randomly shuffling customers.
+        """
         nodes = list(self.cvrp.node_coord.keys())
         nodes.remove(self.cvrp.depot[0])
         for _ in range(self.population_size):
@@ -52,6 +103,15 @@ class GeneticAlgorithmCVRP:
             self.population.append(solution)
 
     def repair_solution(self, solution):
+        """
+        Repair a solution to ensure feasibility by adding missing nodes and removing excess nodes.
+
+        Args:
+            solution (List[Route]): The solution to be repaired.
+
+        Returns:
+            List[Route]: The repaired solution.
+        """
         nodes = set(self.cvrp.node_coord.keys()) - {self.cvrp.depot[0]}
         used_nodes = set(node for route in solution for node in route.customers)
         missing_nodes = list(nodes - used_nodes)
@@ -76,7 +136,37 @@ class GeneticAlgorithmCVRP:
         return solution
 
     def crossover(self, parent1, parent2):
-        """Order Crossover (OX)"""
+        """
+        Perform Order Crossover (OX) between two parents to produce a child solution.
+        Steps in OX Crossover : 
+        1. Input:
+         - Two parent solutions (parent1 and parent2) represented as flat sequences of nodes (customers).
+         - These solutions are derived from routes by flattening them into a single list of customer nodes (ignoring depot representation).
+        2. Random Subsequence Selection:
+         - Randomly select two indices (start and end) in the range of the length of the parent solution.
+         - Extract the subsequence between these indices from parent1. This subsequence will remain fixed in the child.
+        Example:
+            parent1 = [A, B, C, D, E, F, G, H]
+            parent2 = [E, G, A, F, H, B, D, C]
+            Assume start = 2, end = 5.
+            Subsequence from parent1: [C, D, E]
+        3. Create an Empty Child:
+         - Create an empty child solution of the same length as the parents.
+         - Copy the subsequence from parent1 into the child at the same positions.
+        Example:
+            child = [None, None, C, D, E, None, None, None]
+        4. Fill Remaining Slots from parent2
+         - Traverse parent2 in order, skipping nodes that are already in the child's subsequence.
+            Final child: [G, A, C, D, E, F, H, B].
+
+
+        Args:
+            parent1 (List[Route]): The first parent solution.
+            parent2 (List[Route]): The second parent solution.
+
+        Returns:
+            List[Route]: The child solution.
+        """
         flat_parent1 = [node for route in parent1 for node in route.customers]
         flat_parent2 = [node for route in parent2 for node in route.customers]
 
@@ -97,7 +187,12 @@ class GeneticAlgorithmCVRP:
         return self.split_into_routes(child, parent1)
 
     def mutate(self, solution):
-        """Improved Mutation: Inversion Mutation + Route Reassignment"""
+        """
+        Mutate a solution by applying inversion mutation and route reassignment.
+
+        Args:
+            solution (List[Route]): The solution to mutate.
+        """
         for route in solution:
             if random.random() < self.mutation_rate and len(route.customers) > 2:
                 # Inversion Mutation
@@ -122,6 +217,16 @@ class GeneticAlgorithmCVRP:
         self.repair_solution(solution)
 
     def split_into_routes(self, flat_solution, parent_solution):
+        """
+        Split a flat list of customers into valid routes.
+
+        Args:
+            flat_solution (List[int]): The flat list of customer nodes.
+            parent_solution (List[Route]): A reference parent solution for structure.
+
+        Returns:
+            List[Route]: A list of valid routes.
+        """
         routes = []
         current_route = []
         current_capacity = 0
@@ -141,6 +246,12 @@ class GeneticAlgorithmCVRP:
         return routes
 
     def run(self):
+        """
+        Execute the Genetic Algorithm to solve the CVRP.
+
+        Returns:
+            Tuple[List[Route], float]: The best solution and its total cost.
+        """
         self.initialize_population()
 
         for generation in range(self.generations):

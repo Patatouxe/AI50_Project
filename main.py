@@ -1,3 +1,4 @@
+#@Author : tmayer, FGuillaume, RGaspard, Daniel_JK
 from src.UI.ui import CVRPApp
 import tkinter as tk
 
